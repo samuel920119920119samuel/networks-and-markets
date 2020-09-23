@@ -18,18 +18,16 @@ def create_graph(n, p):
 # path between i and j in G.
 def shortest_path(G, i, j):
     q = queue.Queue()
-    q.put(i)
+    q.put((i, 0))
     visited = [0 for _ in range(G.number_of_nodes())]
     visited[i] = 1
-    res = 0
     while not q.empty():
-        n = q.get()
-        res += 1
+        n, leng = q.get()
         for neighbor in G.neighbors(n):
-            if neighbor == j: return res
             if visited[neighbor] == 0:
+                if neighbor == j: return leng + 1
                 visited[neighbor] = 1
-                q.put(neighbor)
+                q.put((neighbor, leng+1))
     return "infinity"
 
 def avg_shortest_path(G, verbal):
@@ -37,6 +35,7 @@ def avg_shortest_path(G, verbal):
     shortest_path_sum = 0
     while rep != 0:
         i, j = random.sample(range(G.number_of_nodes()), 2)
+        if i == j: continue
         s = shortest_path(G, i, j)
         if s == "infinity": continue
         shortest_path_sum += s
@@ -50,6 +49,8 @@ G = create_graph(1000, 0.1)
 f = open(r"./avg_shortest_path.txt", "w")
 for i, j, s in avg_shortest_path(G, 1):
     f.writelines("({}, {}, {})\r".format(i, j, s))
+for l in avg_shortest_path(G, 0):
+    print("avg shortest path with 1000 nodes and p=0.1: ", l)
 f.close()
 
 # 8.d
@@ -82,8 +83,8 @@ f.close()
 
 # 9.c
 for l in avg_shortest_path(G, 0):
-    print("Avg shortest path: ", l)
-# Estimation with p = 0.01
-G2 = create_graph(1000, 0.01)
+    print("Fb avg shortest path: ", l)
+# Estimation with p = 0.0108
+G2 = create_graph(4039, 0.0108)
 for l in avg_shortest_path(G2, 0):
     print("Estimated avg shortest path: ", l)
