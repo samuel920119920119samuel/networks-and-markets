@@ -96,45 +96,50 @@ def get_matching_result(original_graph, residual_graph):
     for i, res_row in enumerate(residual_graph[n+1: n+m+1]):
         for j, res_col in enumerate(res_row[1:n+1]):
             if res_col == 1:
-                match[i] = j
+                match[j] = i
                 break
     return match
 
-# Q7, figure 8.3 test
+def allocate(v, p):
+    while 1:
+        utility = calculateUtility(v, p)
+        g = createGraph(utility)
+        _, res_g = max_matching(g)
+        strictedSet = findConstrictedSet(g, res_g)
+        if len(strictedSet) != 0:
+            # price increase
+            for i in strictedSet:
+                p[i] += 1
+            # price shift
+            if p.count(0) != 0:
+                for i in p: i -= 1
+        else:
+            M = get_matching_result(g, res_g)
+            return M, p
 
-# 7(a)
-"""
-v = [[4, 12, 5], [7, 10, 9], [7, 7, 10]]
-p = [0, 0, 0]
-utility = calculateUtility(v, p)
-g = createGraph(utility)
-_, res_g = max_matching(g)
-strictedSet = findConstrictedSet(g, res_g)
-if len(strictedSet) != 0:
-    print("Stricted set:", strictedSet)
-else:
-    print("Perfect matching!")
-"""
-# 7(b)
-"""
-v = [[4, 12, 5], [7, 10, 9], [7, 7, 10]]
-p = [0, 0, 0]
-while 1:
+# Q7, figure 8.3 test
+if __name__ == "__main__":
+    # 7(a)
+    """
+    v = [[4, 12, 5], [7, 10, 9], [7, 7, 10]]
+    p = [0, 0, 0]
     utility = calculateUtility(v, p)
     g = createGraph(utility)
     _, res_g = max_matching(g)
     strictedSet = findConstrictedSet(g, res_g)
     if len(strictedSet) != 0:
-        # price increase
-        for i in strictedSet:
-            p[i] += 1
-        # price shift
-        if p.count(0) != 0:
-            for i in p: i -= 1
+        print("Stricted set:", strictedSet)
     else:
-        print("Market equilibrium (M,p)")
-        print("M:", get_matching_result(g, res_g))
-        print("p:", p)
-        break
-"""
-# 7(c)
+        print("Perfect matching!")
+    """
+    # 7(b)
+    """
+    v = [[4, 12, 5], [7, 10, 9], [7, 7, 10]]
+    p = [0, 0, 0]
+    M, p = allocate(v, p)
+    print("Market equilibrium (M,p)")
+    print("M:", M)
+    print("p:", p)
+    """
+    # 7(c)
+    
