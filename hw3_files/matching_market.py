@@ -1,7 +1,5 @@
-import random
 import numpy as np
 from queue import Queue
-from matplotlib import pyplot as plt
 
 def print_g(g):
     for i in g: print(i)
@@ -59,7 +57,7 @@ def max_matching(G):
 	drivers = np.array(G)
 	drivers = np.pad(drivers, [(0,0), (n + 1, 1)], mode='constant')
 	riders = np.zeros((m, n+m+2), dtype = np.int)
-	riders[:,n+m+1] = n
+	riders[:,n+m+1] = 1
 	biGraph = np.concatenate(([source],drivers, riders, [sink]), axis=0)
 	return max_flow(biGraph, 0, m+n+1) # a matching
 
@@ -77,16 +75,26 @@ def createGraph(utility):
     for person_i, person_u in enumerate(utility):
         for item_i, u in enumerate(person_u):
             if u == max(person_u):
-                graph[person_i][item_i] = 1 
+                graph[person_i][item_i] = 1
     return graph
 
 def findConstrictedSet(original_graph, residual_graph):
     n = len(original_graph)
     m = len(original_graph[0])
+    # find unpair left hand side nodes
+    left_candidate = set()
+    for i in range(n):
+        back_flow = False
+        for j in range(m):
+            back_flow |= residual_graph[n+1+j][i+1]
+        if not back_flow:
+            left_candidate.add(i)
+    # Add right hand side nodes to based strictedSet on candidates
     strictedSet = set()
-    for i, res in enumerate(residual_graph[n+1: n+m+1]):
-        if res[1:n+1].count(1) > 1:
-            strictedSet.add(i)
+    for i in left_candidate:
+        for j in range(m):
+            if residual_graph[i+1][n+1+j] == 1:
+                strictedSet.add(j)
     return strictedSet
 
 def get_matching_result(original_graph, residual_graph):
@@ -104,9 +112,10 @@ def allocate(v, p):
     while 1:
         utility = calculateUtility(v, p)
         g = createGraph(utility)
-        _, res_g = max_matching(g)
-        strictedSet = findConstrictedSet(g, res_g)
-        if len(strictedSet) != 0:
+        flow, res_g = max_matching(g)
+        # Check perfect matching
+        if flow != min(len(g), len(g[0])):
+            strictedSet = findConstrictedSet(g, res_g)
             # price increase
             for i in strictedSet:
                 p[i] += 1
@@ -141,5 +150,52 @@ if __name__ == "__main__":
     print("M:", M)
     print("p:", p)
     """
-    # 7(c)
-    
+    # 7(c), three self-generated test cases
+    # test case 1
+    """
+    v = [[1, 5, 2, 8, 7, 3],
+         [1, 3, 8, 9, 5, 6],
+         [1, 7, 6, 5, 4, 3],
+         [1, 7, 4, 3, 7, 1],
+         [7, 6, 3, 3, 2, 5],
+         [1, 8, 7, 3, 1, 5]]
+    p = [0, 0, 0, 0, 0, 0]
+    M, p = allocate(v, p)
+    print("Market equilibrium (M,p)")
+    print("M:", M)
+    print("p:", p)
+    """
+    # test case 2
+    """
+    v = [[2, 9, 4, 5, 9, 4, 6, 5],
+         [9, 4, 1, 8, 6, 6, 3, 3],
+         [4, 1, 8, 1, 4, 8, 9, 5],
+         [3, 4, 5, 5, 7, 7, 6, 7],
+         [4, 1, 2, 8, 3, 7, 5, 9],
+         [3, 9, 5, 4, 5, 8, 3, 6],
+         [4, 6, 8, 9, 6, 4, 8, 6],
+         [8, 2, 7, 2, 3, 9, 7, 5]]
+    p = [0, 0, 0, 0, 0, 0, 0, 0]
+    M, p = allocate(v, p)
+    print("Market equilibrium (M,p)")
+    print("M:", M)
+    print("p:", p)
+    """
+    # test case 3
+    """
+    v = [[9, 3, 5, 1, 5, 6, 3, 5, 1, 6],
+         [5, 9, 7, 9, 5, 3, 3, 5, 8, 1],
+         [3, 6, 6, 8, 6, 3, 7, 6, 1, 8],
+         [3, 8, 7, 3, 8, 2, 2, 4, 6, 3],
+         [1, 6, 9, 5, 9, 3, 6, 6, 3, 7],
+         [9, 4, 8, 5, 4, 5, 2, 9, 6, 2],
+         [1, 1, 4, 5, 2, 5, 2, 7, 3, 1],
+         [8, 4, 7, 8, 1, 6, 4, 3, 1, 3],
+         [2, 6, 6, 8, 8, 9, 8, 7, 2, 4],
+         [8, 5, 1, 9, 5, 6, 8, 8, 1, 5]]
+    p = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    M, p = allocate(v, p)
+    print("Market equilibrium (M,p)")
+    print("M:", M)
+    print("p:", p)
+    """
