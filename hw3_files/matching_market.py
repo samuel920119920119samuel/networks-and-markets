@@ -100,7 +100,7 @@ def findConstrictedSet(original_graph, residual_graph):
 def get_matching_result(original_graph, residual_graph):
     n = len(original_graph)
     m = len(original_graph[0])
-    match = {}
+    match = [-1] * n
     for i, res_row in enumerate(residual_graph[n+1: n+m+1]):
         for j, res_col in enumerate(res_row[1:n+1]):
             if res_col == 1:
@@ -108,13 +108,20 @@ def get_matching_result(original_graph, residual_graph):
                 break
     return match
 
-def allocate(v, p):
+def get_payment(M, p):
+    payment = [0] * len(M)
+    for person, item in enumerate(M):
+        payment[person] = p[item]
+    return payment
+
+def market_eq(n, m, v):
+    p = [0] * m
     while 1:
         utility = calculateUtility(v, p)
         g = createGraph(utility)
         flow, res_g = max_matching(g)
         # Check perfect matching
-        if flow != min(len(g), len(g[0])):
+        if flow != min(n, m):
             strictedSet = findConstrictedSet(g, res_g)
             # price increase
             for i in strictedSet:
@@ -124,66 +131,59 @@ def allocate(v, p):
                 for i in p: i -= 1
         else:
             M = get_matching_result(g, res_g)
-            return M, p
+            payment = get_payment(M, p)
+            return payment, M
 
 # Q7, figure 8.3 test
 if __name__ == "__main__":
-    # 7(a)
-    """
-    v = [[4, 12, 5], [7, 10, 9], [7, 7, 10]]
-    p = [0, 0, 0]
-    utility = calculateUtility(v, p)
-    g = createGraph(utility)
-    _, res_g = max_matching(g)
-    strictedSet = findConstrictedSet(g, res_g)
-    if len(strictedSet) != 0:
-        print("Stricted set:", strictedSet)
-    else:
-        print("Perfect matching!")
-    """
     # 7(b)
     """
-    v = [[4, 12, 5], [7, 10, 9], [7, 7, 10]]
-    p = [0, 0, 0]
-    M, p = allocate(v, p)
-    print("Market equilibrium (M,p)")
-    print("M:", M)
+    n = 3
+    m = 3
+    values = [[4, 12, 5], [7, 10, 9], [7, 7, 10]]
+    p, M = market_eq(n, m, values)
+    print("Market equilibrium (p,M)")
     print("p:", p)
+    print("M:", M)
     """
     # 7(c), three self-generated test cases
     # test case 1
     """
-    v = [[1, 5, 2, 8, 7, 3],
-         [1, 3, 8, 9, 5, 6],
-         [1, 7, 6, 5, 4, 3],
-         [1, 7, 4, 3, 7, 1],
-         [7, 6, 3, 3, 2, 5],
-         [1, 8, 7, 3, 1, 5]]
-    p = [0, 0, 0, 0, 0, 0]
-    M, p = allocate(v, p)
-    print("Market equilibrium (M,p)")
-    print("M:", M)
+    n = 6
+    m = 6
+    values = [[1, 5, 2, 8, 7, 3],
+              [1, 3, 8, 9, 5, 6],
+              [1, 7, 6, 5, 4, 3],
+              [1, 7, 4, 3, 7, 1],
+              [7, 6, 3, 3, 2, 5],
+              [1, 8, 7, 3, 1, 5]]
+    p, M = market_eq(n, m, values)
+    print("Market equilibrium (p,M)")
     print("p:", p)
+    print("M:", M)
     """
     # test case 2
     """
-    v = [[2, 9, 4, 5, 9, 4, 6, 5],
-         [9, 4, 1, 8, 6, 6, 3, 3],
-         [4, 1, 8, 1, 4, 8, 9, 5],
-         [3, 4, 5, 5, 7, 7, 6, 7],
-         [4, 1, 2, 8, 3, 7, 5, 9],
-         [3, 9, 5, 4, 5, 8, 3, 6],
-         [4, 6, 8, 9, 6, 4, 8, 6],
-         [8, 2, 7, 2, 3, 9, 7, 5]]
-    p = [0, 0, 0, 0, 0, 0, 0, 0]
-    M, p = allocate(v, p)
-    print("Market equilibrium (M,p)")
-    print("M:", M)
+    n = 8
+    m = 8
+    values = [[2, 9, 4, 5, 9, 4, 6, 5],
+              [9, 4, 1, 8, 6, 6, 3, 3],
+              [4, 1, 8, 1, 4, 8, 9, 5],
+              [3, 4, 5, 5, 7, 7, 6, 7],
+              [4, 1, 2, 8, 3, 7, 5, 9],
+              [3, 9, 5, 4, 5, 8, 3, 6],
+              [4, 6, 8, 9, 6, 4, 8, 6],
+              [8, 2, 7, 2, 3, 9, 7, 5]]
+    p, M = market_eq(n, m, values)
+    print("Market equilibrium (p,M)")
     print("p:", p)
+    print("M:", M)
     """
     # test case 3
     """
-    v = [[9, 3, 5, 1, 5, 6, 3, 5, 1, 6],
+    n = 10
+    m = 10
+    values = [[9, 3, 5, 1, 5, 6, 3, 5, 1, 6],
          [5, 9, 7, 9, 5, 3, 3, 5, 8, 1],
          [3, 6, 6, 8, 6, 3, 7, 6, 1, 8],
          [3, 8, 7, 3, 8, 2, 2, 4, 6, 3],
@@ -193,9 +193,8 @@ if __name__ == "__main__":
          [8, 4, 7, 8, 1, 6, 4, 3, 1, 3],
          [2, 6, 6, 8, 8, 9, 8, 7, 2, 4],
          [8, 5, 1, 9, 5, 6, 8, 8, 1, 5]]
-    p = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    M, p = allocate(v, p)
-    print("Market equilibrium (M,p)")
-    print("M:", M)
+    p, M = market_eq(n, m, values)
+    print("Market equilibrium (p,M)")
     print("p:", p)
+    print("M:", M)
     """
