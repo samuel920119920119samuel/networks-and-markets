@@ -127,7 +127,7 @@ def market_eq(n, m, v):
             for i in strictedSet:
                 p[i] += 1
             # price shift
-            if p.count(0) != 0:
+            if p.count(0) == 0:
                 for i in p: i -= 1
         else:
             M = get_matching_result(g, res_g)
